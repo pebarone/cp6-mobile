@@ -87,10 +87,3 @@ Endpoints utilizados:
 - `GET /pokemon?limit=50&offset=0` - Lista de pokémons
 - `GET /pokemon/{id ou name}` - Detalhes do pokémon
 
-## 👨‍💻 Autor
-
-Projeto desenvolvido para o CP6 da disciplina Mobile App Development.
-
-## 📄 Licença
-
-Este projeto é para fins educacionais.
