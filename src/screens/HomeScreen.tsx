@@ -5,9 +5,9 @@ import {
   FlatList, 
   StyleSheet, 
   ActivityIndicator, 
-  SafeAreaView,
   StatusBar 
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { pokeApi } from '../services/pokeApi';
 import { Pokemon } from '../types/pokemon';
@@ -30,7 +30,12 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
       setLoading(true);
       setError(null);
       const data = await pokeApi.getPokemonList(50, 0);
-      setPokemons(data.results);
+      // Não buscar detalhes para evitar muitas requisições
+      const withIds = data.results.map((pokemon) => {
+        const idStr = pokeApi.getPokemonIdFromUrl(pokemon.url);
+        return { ...pokemon, id: Number(idStr) };
+      });
+      setPokemons(withIds);
     } catch (err) {
       setError('Erro ao carregar pokémons. Tente novamente.');
       console.error(err);
@@ -76,6 +81,8 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
           <PokemonCard
             name={item.name}
             url={item.url}
+            image={item.image}
+            id={item.id}
             onPress={() => handlePokemonPress(item.name)}
           />
         )}

@@ -6,9 +6,9 @@ import {
   StyleSheet,
   ActivityIndicator,
   ScrollView,
-  SafeAreaView,
   TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { pokeApi } from '../services/pokeApi';
 import { PokemonDetail } from '../types/pokemon';
@@ -42,6 +42,8 @@ export const DetailsScreen: React.FC<Props> = ({ route, navigation }) => {
   const [pokemon, setPokemon] = useState<PokemonDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Keep hook order stable across renders; set image URI when pokemon loads
+  const [imgUri, setImgUri] = useState<string | null>(null);
 
   useEffect(() => {
     loadPokemonDetails();
@@ -60,6 +62,15 @@ export const DetailsScreen: React.FC<Props> = ({ route, navigation }) => {
       setLoading(false);
     }
   };
+
+  // Set main image from official CDN when pokemon changes
+  useEffect(() => {
+    if (pokemon) {
+      const paddedId = String(pokemon.id).padStart(3, '0');
+      const officialCdn = `https://assets.pokemon.com/assets/cms2/img/pokedex/full/${paddedId}.png`;
+      setImgUri(officialCdn);
+    }
+  }, [pokemon]);
 
   if (loading) {
     return (
@@ -93,9 +104,10 @@ export const DetailsScreen: React.FC<Props> = ({ route, navigation }) => {
           <Text style={styles.pokemonId}>#{pokemon.id.toString().padStart(3, '0')}</Text>
         </View>
         <Image
-          source={{ uri: pokemon.sprites.other['official-artwork'].front_default }}
+          source={{ uri: imgUri ?? pokemon.sprites.front_default }}
           style={styles.mainImage}
           resizeMode="contain"
+          onError={() => setImgUri(pokemon.sprites.front_default)}
         />
       </View>
 

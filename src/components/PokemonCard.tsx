@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { pokeApi } from '../services/pokeApi';
 
@@ -6,21 +6,27 @@ interface PokemonCardProps {
   name: string;
   url: string;
   onPress: () => void;
+  image?: string;
+  id?: number;
 }
 
-export const PokemonCard: React.FC<PokemonCardProps> = ({ name, url, onPress }) => {
-  const pokemonId = pokeApi.getPokemonIdFromUrl(url);
-  const imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemonId}.png`;
+export const PokemonCard: React.FC<PokemonCardProps> = ({ name, url, onPress, image, id }) => {
+  const pokemonId = id || Number(pokeApi.getPokemonIdFromUrl(url));
+  const paddedId = String(pokemonId).padStart(3, '0');
+  const officialCdn = `https://assets.pokemon.com/assets/cms2/img/pokedex/full/${paddedId}.png`;
+  const fallback = image || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`;
+  const [imgUri, setImgUri] = useState<string>(officialCdn);
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
       <Image 
-        source={{ uri: imageUrl }} 
+        source={{ uri: imgUri }} 
         style={styles.image}
         resizeMode="contain"
+        onError={() => setImgUri(fallback)}
       />
       <View style={styles.info}>
-        <Text style={styles.id}>#{pokemonId.padStart(3, '0')}</Text>
+        <Text style={styles.id}>#{String(pokemonId).padStart(3, '0')}</Text>
         <Text style={styles.name}>{name.charAt(0).toUpperCase() + name.slice(1)}</Text>
       </View>
     </TouchableOpacity>
